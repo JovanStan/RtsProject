@@ -3,6 +3,7 @@
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
+#include "RtsProject/Pawns/RtsBasePawn.h"
 #include "RtsProject/Pawns/RtsControllerPawn.h"
 
 
@@ -26,6 +27,7 @@ void ARtsPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ThisClass::Zoom);
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Completed, this, &ThisClass::Select);
 	}
 }
 
@@ -56,6 +58,31 @@ void ARtsPlayerController::Zoom(const FInputActionValue& Value)
 			float DesiredOrthoWidth = ControllerPawn->GetCamera()->OrthoWidth - ZoomDirection * ControllerPawn->GetZoomSpeed();
 			DesiredOrthoWidth = FMath::Clamp(DesiredOrthoWidth, ControllerPawn->GetMinZoom(), ControllerPawn->GetMaxZoom());
 			ControllerPawn->GetCamera()->OrthoWidth = DesiredOrthoWidth;
+		}
+	}
+}
+
+void ARtsPlayerController::Select()
+{
+	FHitResult HitResult;
+	GetHitResultUnderCursor(ECC_Camera, false, HitResult);
+	
+	//Deselect Previous Actor
+	if (SelectedActor)
+	{
+		if (SelectedActor->Implements<USelectableInterface>())
+		{
+			ISelectableInterface::Execute_SelectActor(SelectedActor, false);
+		}
+	}
+	
+	SelectedActor = HitResult.GetActor();
+	if (SelectedActor)
+	{
+		//Select new Actor
+		if (SelectedActor->Implements<USelectableInterface>())
+		{
+			ISelectableInterface::Execute_SelectActor(SelectedActor, true);
 		}
 	}
 }

@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "RtsPlayerController.generated.h"
 
+class ARtsBasePawn;
 struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
@@ -22,6 +23,7 @@ protected:
 	
 	void Move(const FInputActionValue& Value);
 	void Zoom(const FInputActionValue& Value);
+	void Select();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
@@ -31,4 +33,9 @@ private:
 	TObjectPtr<UInputAction> MoveAction;
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
     TObjectPtr<UInputAction> ZoomAction;
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
+	TObjectPtr<UInputAction> SelectAction;
+	
+	UPROPERTY()
+	TObjectPtr<AActor> SelectedActor;
 };
