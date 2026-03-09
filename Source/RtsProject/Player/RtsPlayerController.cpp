@@ -28,6 +28,7 @@ void ARtsPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ThisClass::Zoom);
 		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Completed, this, &ThisClass::Select);
+		EnhancedInputComponent->BindAction(CommandAction, ETriggerEvent::Completed, this, &ThisClass::CommandSelectedActor);
 	}
 }
 
@@ -83,6 +84,23 @@ void ARtsPlayerController::Select()
 		if (SelectedActor->Implements<USelectableInterface>())
 		{
 			ISelectableInterface::Execute_SelectActor(SelectedActor, true);
+		}
+	}
+}
+
+void ARtsPlayerController::CommandSelectedActor()
+{
+	if (SelectAction)
+	{
+		if (SelectedActor->Implements<UNavigableInterface>())
+		{
+			FHitResult HitResult;
+			GetHitResultUnderCursor(ECC_Camera, false, HitResult);
+			
+			if (HitResult.bBlockingHit)
+			{
+				INavigableInterface::Execute_MoveToLocation(SelectedActor, HitResult.Location);
+			}
 		}
 	}
 }

@@ -24,6 +24,7 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Zoom(const FInputActionValue& Value);
 	void Select();
+	void CommandSelectedActor();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
@@ -35,6 +36,8 @@ private:
     TObjectPtr<UInputAction> ZoomAction;
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
 	TObjectPtr<UInputAction> SelectAction;
+	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
+	TObjectPtr<UInputAction> CommandAction;
 	
 	UPROPERTY()
 	TObjectPtr<AActor> SelectedActor;
