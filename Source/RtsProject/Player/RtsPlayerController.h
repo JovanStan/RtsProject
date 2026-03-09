@@ -18,6 +18,7 @@ class RTSPROJECT_API ARtsPlayerController : public APlayerController
 	
 public:
 	ARtsPlayerController();
+	virtual void Tick(float DeltaSeconds) override;
 	
 protected:
 	virtual void BeginPlay() override;
@@ -25,6 +26,7 @@ protected:
 	
 	void Move(const FInputActionValue& Value);
 	void Zoom(const FInputActionValue& Value);
+	void EdgeScroll();
 	void Select();
 	void CommandSelectedActors();
 	

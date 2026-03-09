@@ -11,6 +11,14 @@
 ARtsPlayerController::ARtsPlayerController()
 {
 	bShowMouseCursor = true;
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void ARtsPlayerController::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	EdgeScroll();
 }
 
 void ARtsPlayerController::BeginPlay()
@@ -73,6 +81,44 @@ void ARtsPlayerController::Zoom(const FInputActionValue& Value)
 			float DesiredOrthoWidth = ControllerPawn->GetCamera()->OrthoWidth - ZoomDirection * ControllerPawn->GetZoomSpeed();
 			DesiredOrthoWidth = FMath::Clamp(DesiredOrthoWidth, ControllerPawn->GetMinZoom(), ControllerPawn->GetMaxZoom());
 			ControllerPawn->GetCamera()->OrthoWidth = DesiredOrthoWidth;
+		}
+	}
+}
+
+void ARtsPlayerController::EdgeScroll()
+{
+	float MouseX, MouseY;
+	if (GetMousePosition(MouseX, MouseY))
+	{
+		if (GEngine->GameViewport)
+		{
+			FVector2D MovementInput = FVector2D::ZeroVector;
+			constexpr float EdgeThreshold = 10.f;
+				
+			FVector2D ViewportSize;
+			GEngine->GameViewport->GetViewportSize(ViewportSize);
+				
+			if (MouseX < EdgeThreshold)
+			{
+				MovementInput.X = -1.f;
+			}
+			if (MouseX > ViewportSize.X - EdgeThreshold)
+			{
+				MovementInput.X = 1.f;
+			}
+			if (MouseY < EdgeThreshold)
+			{
+				MovementInput.Y = 1.f;
+			}
+			if (MouseY > ViewportSize.Y - EdgeThreshold)
+			{
+				MovementInput.Y = -1.f;
+			}
+				
+			if (!MovementInput.IsZero())
+			{
+				Move(FInputActionValue(MovementInput));
+			}
 		}
 	}
 }
