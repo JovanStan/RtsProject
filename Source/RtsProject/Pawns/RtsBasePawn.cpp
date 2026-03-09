@@ -42,6 +42,7 @@ void ARtsBasePawn::MoveToLocation_Implementation(const FVector& TargetLocation)
 {
 	bMoving = true;
 	
+	MoveTargetLocation = TargetLocation;
 	AAIController* PawnAiController = Cast<AAIController>(GetController());
 	PawnAiController->MoveToLocation(TargetLocation, AcceptanceDistance);
 }

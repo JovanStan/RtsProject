@@ -5,11 +5,19 @@
 #include "Camera/CameraComponent.h"
 #include "RtsProject/Pawns/RtsBasePawn.h"
 #include "RtsProject/Pawns/RtsControllerPawn.h"
+#include "RtsProject/UI/RtsHUD.h"
 
 
 ARtsPlayerController::ARtsPlayerController()
 {
 	bShowMouseCursor = true;
+}
+
+void ARtsPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	Hud = Cast<ARtsHUD>(GetHUD());
 }
 
 void ARtsPlayerController::SetupInputComponent()
@@ -27,8 +35,14 @@ void ARtsPlayerController::SetupInputComponent()
 	{
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ThisClass::Move);
 		EnhancedInputComponent->BindAction(ZoomAction, ETriggerEvent::Triggered, this, &ThisClass::Zoom);
+		
 		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Completed, this, &ThisClass::Select);
-		EnhancedInputComponent->BindAction(CommandAction, ETriggerEvent::Completed, this, &ThisClass::CommandSelectedActor);
+		
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Started, this, &ThisClass::SelectStart);
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Triggered, this, &ThisClass::SelectOnGoing);
+		EnhancedInputComponent->BindAction(SelectAction, ETriggerEvent::Completed, this, &ThisClass::SelectEnd);
+		
+		EnhancedInputComponent->BindAction(CommandAction, ETriggerEvent::Completed, this, &ThisClass::CommandSelectedActors);
 	}
 }
 
@@ -88,18 +102,93 @@ void ARtsPlayerController::Select()
 	}
 }
 
-void ARtsPlayerController::CommandSelectedActor()
+void ARtsPlayerController::CommandSelectedActors()
 {
-	if (SelectAction)
+	FHitResult HitResult;
+	GetHitResultUnderCursor(ECC_Camera, false, HitResult);
+	if (!HitResult.bBlockingHit) return;
+
+	if (SelectedActors.Num() > 0)
+	{
+		int i = SelectedActors.Num() / -2;
+		for (AActor* Actor : SelectedActors)
+		{
+			if (Actor)
+			{
+				if (Actor->Implements<UNavigableInterface>())
+				{
+					INavigableInterface::Execute_MoveToLocation(Actor, HitResult.Location + FVector(0, 100 * i, 0));
+					i++;
+				}
+			}
+		}
+	}
+	else 
 	{
 		if (SelectedActor->Implements<UNavigableInterface>())
 		{
-			FHitResult HitResult;
-			GetHitResultUnderCursor(ECC_Camera, false, HitResult);
-			
-			if (HitResult.bBlockingHit)
+			INavigableInterface::Execute_MoveToLocation(SelectedActor, HitResult.Location);
+		}
+	}
+}
+
+void ARtsPlayerController::SelectStart()
+{
+	float MouseX, MouseY;
+	GetMousePosition(MouseX, MouseY);
+	SelectionStartPosition = FVector2D(MouseX, MouseY);
+}
+
+void ARtsPlayerController::SelectOnGoing()
+{
+	float MouseX, MouseY;
+	GetMousePosition(MouseX, MouseY);
+	SelectionSize = FVector2D(MouseX - SelectionStartPosition.X, MouseY - SelectionStartPosition.Y);
+
+	if (Hud)
+	{
+		Hud->ShowSelectionRect(SelectionStartPosition, SelectionSize);
+	}
+}
+
+void ARtsPlayerController::SelectEnd()
+{
+	if (Hud)
+	{
+		//Select new actors
+		Hud->HideSelectionRect();
+		FTimerHandle TimerHandle;
+		GetWorld()->GetTimerManager().SetTimer(TimerHandle, this, &ThisClass::SelectMultipleActors, .2f, false);
+	}
+}
+
+void ARtsPlayerController::SelectMultipleActors()
+{
+	if (Hud)
+	{
+		//Deselect previous selected actors
+		for (AActor* Actor : SelectedActors)
+		{
+			if (Actor)
 			{
-				INavigableInterface::Execute_MoveToLocation(SelectedActor, HitResult.Location);
+				if (Actor->Implements<USelectableInterface>())
+				{
+					ISelectableInterface::Execute_SelectActor(Actor, false);
+				}
+			}
+		}
+		SelectedActors.Empty();
+		//Select new actors
+		TArray<AActor*> AllSelectedActors = Hud->GetSelectedActors();
+		for (AActor* Actor : AllSelectedActors)
+		{
+			if (Actor)
+			{
+				if (Actor->Implements<USelectableInterface>())
+				{
+					ISelectableInterface::Execute_SelectActor(Actor, true);
+					SelectedActors.AddUnique(Actor);
+				}
 			}
 		}
 	}

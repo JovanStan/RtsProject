@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerController.h"
 #include "RtsPlayerController.generated.h"
 
+class ARtsHUD;
 class ARtsBasePawn;
 struct FInputActionValue;
 class UInputAction;
@@ -19,12 +20,18 @@ public:
 	ARtsPlayerController();
 	
 protected:
+	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 	
 	void Move(const FInputActionValue& Value);
 	void Zoom(const FInputActionValue& Value);
 	void Select();
-	void CommandSelectedActor();
+	void CommandSelectedActors();
+	
+	void SelectStart();
+	void SelectOnGoing();
+	void SelectEnd();
+	void SelectMultipleActors();
 	
 private:
 	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
@@ -41,4 +48,12 @@ private:
 	
 	UPROPERTY()
 	TObjectPtr<AActor> SelectedActor;
+	UPROPERTY()
+	TObjectPtr<ARtsHUD> Hud;
+	
+	UPROPERTY()
+	TArray<AActor*> SelectedActors;
+	
+	FVector2D SelectionStartPosition;
+	FVector2D SelectionSize;
 };
