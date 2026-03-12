@@ -47,6 +47,11 @@ void ARtsBasePawn::MoveToLocation_Implementation(const FVector& TargetLocation)
 	PawnAiController->MoveToLocation(TargetLocation, AcceptanceDistance);
 }
 
+ECharacterType ARtsBasePawn::GetCharacterType_Implementation()
+{
+	return CharacterType;
+}
+
 
 void ARtsBasePawn::OrientCharacterRotationToMovement()
 {

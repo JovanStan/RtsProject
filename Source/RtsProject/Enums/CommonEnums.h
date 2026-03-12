@@ -9,3 +9,12 @@ enum class EResourceTypes : uint8
 	Food UMETA(DisplayName = "Food"),
 	Population UMETA(DisplayName = "Population")
 };
+
+UENUM(BlueprintType)
+enum class ECharacterType : uint8
+{
+	Villager UMETA(DisplayName = "Villager"),
+	Swordman UMETA(DisplayName = "Swordman"),
+	Knight UMETA(DisplayName = "Knight"),
+	Archer UMETA(DisplayName = "Archer")
+};

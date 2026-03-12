@@ -237,5 +237,6 @@ void ARtsPlayerController::SelectMultipleActors()
 				}
 			}
 		}
+		OnActorsSelected.Broadcast(SelectedActors);
 	}
 }

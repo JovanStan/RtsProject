@@ -11,6 +11,8 @@ struct FInputActionValue;
 class UInputAction;
 class UInputMappingContext;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnActorsSelectedDelegate, const TArray<AActor*>&, SelectedActors);
+
 UCLASS()
 class RTSPROJECT_API ARtsPlayerController : public APlayerController
 {
@@ -58,4 +60,7 @@ private:
 	
 	FVector2D SelectionStartPosition;
 	FVector2D SelectionSize;
+	
+	UPROPERTY(BlueprintAssignable)
+	FOnActorsSelectedDelegate OnActorsSelected;
 };
